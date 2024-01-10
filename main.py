@@ -126,7 +126,7 @@ class MyWidget(QMainWindow, Ui_MainWindow):
             print(str(e))
         if v is not None:
             try:
-                r = requests.get('https://github.com/grigvlwork/reward/blob/master/version.txt')
+                r = requests.get('https://github.com/grigvlwork/pool_jan_24/blob/main/version.txt')
                 new_v = r.text[r.text.find("rawLines") + 12:r.text.find("rawLines") + 17]
                 if v != new_v:
                     QMessageBox.information(self,

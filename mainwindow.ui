@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1058</width>
+    <width>1328</width>
     <height>878</height>
    </rect>
   </property>
@@ -149,6 +149,19 @@
             </item>
            </layout>
           </widget>
+          <widget class="QWidget" name="tab_3">
+           <attribute name="title">
+            <string>Задача</string>
+           </attribute>
+           <attribute name="toolTip">
+            <string>Задача</string>
+           </attribute>
+           <layout class="QHBoxLayout" name="horizontalLayout_8">
+            <item>
+             <widget class="QTextBrowser" name="task_tb"/>
+            </item>
+           </layout>
+          </widget>
          </widget>
         </item>
        </layout>
@@ -192,6 +205,16 @@
              <string>Вставить</string>
             </property>
            </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Ссылка на задачу</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="lineEdit"/>
           </item>
           <item>
            <spacer name="horizontalSpacer">
