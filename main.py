@@ -17,6 +17,7 @@ from PyQt5 import uic, QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox, QDialog
 from PyQt5 import QtGui
 from PyQt5.QtGui import QStandardItem, QStandardItemModel
+from PyQt5.QtWebEngineWidgets import *
 from mainwindow import Ui_MainWindow
 import requests
 
@@ -91,6 +92,9 @@ class MyWidget(QMainWindow, Ui_MainWindow):
         self.clear_btn.clicked.connect(self.clear_explanation)
         self.setWindowTitle(f'Пул январь 2024 {self.check_version()}')
         self.my_error_txt = ''
+        # https://dev.to/ashishpandey/say-goodbye-to-chrome-build-your-own-browser-with-pyqt5-and-python-23ld
+        self.browser = QWebEngineView()
+
 
     def run_text(self, text, timeout):
         with open('code.py', 'w', encoding='utf-8') as c:
