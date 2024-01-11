@@ -1,7 +1,7 @@
 # https://ramziv.com/article/2
 import yadisk
 
-token = 'y0_AgAAAAALL6XDAAsa2AAAAAD3vP5rFPTI8KmvS-eOEolBVdNIKaOBDtk'
+token = ''
 y = yadisk.YaDisk(token=token)
 # print(y.check_token())  # Проверим токен
 # y.mkdir('files/test')
