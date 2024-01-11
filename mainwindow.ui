@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1328</width>
-    <height>878</height>
+    <height>868</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -149,19 +149,6 @@
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="tab_3">
-           <attribute name="title">
-            <string>Задача</string>
-           </attribute>
-           <attribute name="toolTip">
-            <string>Задача</string>
-           </attribute>
-           <layout class="QHBoxLayout" name="horizontalLayout_8">
-            <item>
-             <widget class="QTextBrowser" name="task_tb"/>
-            </item>
-           </layout>
-          </widget>
          </widget>
         </item>
        </layout>
@@ -214,7 +201,14 @@
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="lineEdit"/>
+           <widget class="QLineEdit" name="link_to_task_le">
+            <property name="minimumSize">
+             <size>
+              <width>300</width>
+              <height>0</height>
+             </size>
+            </property>
+           </widget>
           </item>
           <item>
            <spacer name="horizontalSpacer">

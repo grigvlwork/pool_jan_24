@@ -17,9 +17,9 @@ from PyQt5 import uic, QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox, QDialog
 from PyQt5 import QtGui
 from PyQt5.QtGui import QStandardItem, QStandardItemModel
-from PyQt5.QtWebEngineWidgets import *
 from mainwindow import Ui_MainWindow
 import requests
+from file_proc import Files
 
 
 def remove_comments(code):
@@ -91,9 +91,25 @@ class MyWidget(QMainWindow, Ui_MainWindow):
         self.copy_answer_btn.clicked.connect(self.copy_my_answer)
         self.clear_btn.clicked.connect(self.clear_explanation)
         self.setWindowTitle(f'Пул январь 2024 {self.check_version()}')
+        self.link_to_task_le.textChanged.connect(self.link_to_task_changed)
         self.my_error_txt = ''
+        self.files = None
+        self.file_name = None
         # https://dev.to/ashishpandey/say-goodbye-to-chrome-build-your-own-browser-with-pyqt5-and-python-23ld
-        self.browser = QWebEngineView()
+
+    def link_to_task_changed(self):
+        if self.files is None:
+            self.files = Files()
+        if len(self.link_to_task_le.text()) > 0:
+            id = self.files.get_id_from_url(self.link_to_task_le.text())
+            code = self.correct_code_pte.toPlainText()
+            file_name = self.files.get_filename_from_code(code)
+            if file_name != -1:
+                if id in self.files.local_files:
+                    self.files.get_local_file(id, file_name)
+                elif id in self.files.global_files:
+                    self.files.get_global_file(id, file_name)
+                else:
 
 
     def run_text(self, text, timeout):
