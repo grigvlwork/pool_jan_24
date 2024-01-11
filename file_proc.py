@@ -79,14 +79,25 @@ class Files:
                 return
 
     def save_file(self, id, full_file_name):
+        if id in self.local_files and \
+                os.path.isfile(self.get_zip_name(os.path.basename(full_file_name))):
+            return
         if not os.path.isdir(os.getcwd() + f'/files/{id}'):
             os.mkdir(os.getcwd() + f'/files/{id}')
         shutil.copy(full_file_name, os.getcwd())
         file_name = os.getcwd() + f'/files/{id}/{self.get_zip_name(os.path.basename(full_file_name))}'
         with ZipFile(file_name,'w') as zip:
                 zip.write(os.path.basename(full_file_name))
-        os.remove(os.getcwd() + f'/{os.path.basename(full_file_name)}')
         self.local_files.append(id)
+        if id in self.global_files:
+            if self.y.is_file(f'/files/{id}/{self.get_zip_name(os.path.basename(full_file_name))}'):
+                return
+        if not self.y.is_dir(f'/files/{id}/'):
+            self.y.mkdir(f'/files/{id}/')
+        self.y.upload(os.getcwd() + f'/{os.path.basename(full_file_name)}',
+                      f'/files/{id}/')
+        os.remove(os.getcwd() + f'/{os.path.basename(full_file_name)}')
+
 
 
 files = Files()
