@@ -111,6 +111,7 @@ class MyWidget(QMainWindow, Ui_MainWindow):
         # https://dev.to/ashishpandey/say-goodbye-to-chrome-build-your-own-browser-with-pyqt5-and-python-23ld
 
     def insert_link(self):
+        self.link_to_task_le.clear()
         self.link_to_task_le.setText(pyperclip.paste())
 
     def link_to_task_changed(self):
@@ -132,13 +133,24 @@ class MyWidget(QMainWindow, Ui_MainWindow):
                                             'Информация', 'Файл скопирован в папку программы',
                                             QMessageBox.Ok)
                 else:
-                    QMessageBox.information(self,
-                                            'Информация', 'Файл не найден в локальных папках и на сетевом диске,\n' +
-                                            ' скачайте его и нажмите ОК для выбора',
-                                            QMessageBox.Ok)
-                    filename, ok = QFileDialog.getOpenFileName(
-                        None, 'Выбор файла', get_download_path(), 'Файлы данных к задачам (*.txt *.csv)', None
-                    )
+                    if QMessageBox.information(self,
+                                               'Информация',
+                                               'Файл не найден в локальных папках и на сетевом диске,\n' +
+                                               ' скачайте его и нажмите ОК для выбора',
+                                               QMessageBox.Ok | QMessageBox.Cancel) == QMessageBox.Cancel:
+                        return
+                    filename = ''
+                    while os.path.basename(filename) != file_name:
+                        filename, ok = QFileDialog.getOpenFileName(
+                            None, 'Выбор файла', get_download_path(), 'Файлы данных к задачам (*.txt *.csv)', None
+                        )
+                        if filename is not None and os.path.basename(filename) != file_name:
+                            if QMessageBox.critical(self,
+                                                    'Ошибка', 'Имя выбранного файла не соответствует\n' +
+                                                              'имени файла в программе. Скачайте другой файл',
+                                                    QMessageBox.Ok | QMessageBox.Cancel) == QMessageBox.Cancel:
+                                return
+                            file_name = self.files.get_filename_from_code(code)
                     if filename:
                         if self.files.save_file(id, filename) == 1:
                             if self.files.get_local_file(id, os.path.basename(filename)) == 1:

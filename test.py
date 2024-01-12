@@ -21,3 +21,7 @@ y.download('/files/test/test.py', 'test1.py')
 # https://education.yandex.ru/ege/task/aacb990b-df04-48ee-a3c5-5472a68fd379
 # with open('27_A.txt', 'w', encoding='utf-8') as c:
 # with open('27_B.txt', 'w', encoding='utf-8') as c:
+
+# https://education.yandex.ru/ege/task/0f1bb8de-fe34-40c1-a82e-8d012e8519dc
+# with open('9.ods', 'w', encoding='utf-8') as c:
+# with open('9.csv', 'w', encoding='utf-8') as c:
