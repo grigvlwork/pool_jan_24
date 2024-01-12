@@ -15,3 +15,6 @@ y = yadisk.YaDisk(token=token)
 #     print(f"Дата создания: {item['created']}\n")
 
 y.download('/files/test/test.py', 'test1.py')
+
+# https://education.yandex.ru/ege/task/0f1bb8de-fe34-40c1-a82e-8d012e8519dc
+# with open('9.txt', 'w', encoding='utf-8') as c:

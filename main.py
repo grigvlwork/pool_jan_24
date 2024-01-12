@@ -14,16 +14,28 @@ import os
 import glob
 import qdarkstyle
 from PyQt5 import uic, QtCore
-from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox, QDialog
+from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox, QDialog, QFileDialog
 from PyQt5 import QtGui
 from PyQt5.QtGui import QStandardItem, QStandardItemModel
 from mainwindow import Ui_MainWindow
 import requests
+import winreg
 from file_proc import Files
 
 
 def remove_comments(code):
     return re.sub(r'#.*', '', code)
+
+
+def get_download_path():
+    if os.name == 'nt':
+        sub_key = r'SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders'
+        downloads_guid = '{374DE290-123F-4565-9164-39C4925E467B}'
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, sub_key) as key:
+            location = winreg.QueryValueEx(key, downloads_guid)[0]
+        return location
+    else:
+        return os.path.join(os.path.expanduser('~'), 'downloads')
 
 
 def spell_check(text):
@@ -92,10 +104,14 @@ class MyWidget(QMainWindow, Ui_MainWindow):
         self.clear_btn.clicked.connect(self.clear_explanation)
         self.setWindowTitle(f'Пул январь 2024 {self.check_version()}')
         self.link_to_task_le.textChanged.connect(self.link_to_task_changed)
+        self.link_pb.clicked.connect(self.insert_link)
         self.my_error_txt = ''
         self.files = None
         self.file_name = None
         # https://dev.to/ashishpandey/say-goodbye-to-chrome-build-your-own-browser-with-pyqt5-and-python-23ld
+
+    def insert_link(self):
+        self.link_to_task_le.setText(pyperclip.paste())
 
     def link_to_task_changed(self):
         if self.files is None:
@@ -104,13 +120,31 @@ class MyWidget(QMainWindow, Ui_MainWindow):
             id = self.files.get_id_from_url(self.link_to_task_le.text())
             code = self.correct_code_pte.toPlainText()
             file_name = self.files.get_filename_from_code(code)
-            if file_name != -1:
-                if id in self.files.local_files:
-                    self.files.get_local_file(id, file_name)
-                elif id in self.files.global_files:
-                    self.files.get_global_file(id, file_name)
+            if file_name != '':
+                if self.files.local_files is not None and id in self.files.local_files \
+                        and self.files.get_local_file(id, file_name) == 1:
+                    QMessageBox.information(self,
+                                            'Информация', 'Файл скопирован в папку программы',
+                                            QMessageBox.Ok)
+                elif self.files.global_files is not None and id in self.files.global_files \
+                        and self.files.get_global_file(id, file_name) == 1:
+                    QMessageBox.information(self,
+                                            'Информация', 'Файл скопирован в папку программы',
+                                            QMessageBox.Ok)
                 else:
-
+                    QMessageBox.information(self,
+                                            'Информация', 'Файл не найден в локальных папках и на сетевом диске,\n' +
+                                            ' скачайте его и нажмите ОК для выбора',
+                                            QMessageBox.Ok)
+                    filename, ok = QFileDialog.getOpenFileName(
+                        None, 'Выбор файла', get_download_path(), 'Файлы данных к задачам (*.txt *.csv)', None
+                    )
+                    if filename:
+                        if self.files.save_file(id, filename) == 1:
+                            if self.files.get_local_file(id, os.path.basename(filename)) == 1:
+                                QMessageBox.information(self,
+                                                        'Информация', 'Файл скопирован в папку программы',
+                                                        QMessageBox.Ok)
 
     def run_text(self, text, timeout):
         with open('code.py', 'w', encoding='utf-8') as c:

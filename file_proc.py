@@ -63,33 +63,62 @@ class Files:
     def get_zip_name(self, name):
         return name[:name.rfind('.')] + '.zip'
 
+    def get_only_name(self, name):
+        return name[:name.rfind('.')]
+
     def get_local_file(self, id, name):
         if id in self.local_files:
             try:
                 file_name = f'{os.getcwd()}/files/{id}/{self.get_zip_name(name)}'
-                with ZipFile(file_name, mode="r") as archive:
-                    archive.extract(name, path=os.getcwd())
+                if os.path.isfile(file_name):
+                    with ZipFile(file_name, mode="r") as archive:
+                        if name in archive.filelist:
+                            archive.extract(name, path=os.getcwd())
+                            return 1
+                        else:
+                            return -1
+                else:
+                    return -1
             except Exception:
                 # self.correct_output_lb.setText('Файл не найден')
-                return
+                return -1
 
     def get_global_file(self, id, name):
         if id in self.global_files:
             try:
-                file_name = f'/files/{id}/{self.get_zip_name(name)}'
-                os.mkdir(os.getcwd() + f'/files/{id}')
-                self.y.download(file_name, os.getcwd() + file_name)
-                self.local_files.append(id)
-                self.get_local_file(id, name)
+                file_name = f'/files/{id}/{self.get_only_name(name)}'
+                file_name_zip = f'/files/{id}/{self.get_zip_name(name)}'
+                if self.y.is_file(file_name):
+                    if not os.path.isdir(os.getcwd() + '/files'):
+                        os.mkdir(os.getcwd() + '/files')
+                    os.mkdir(os.getcwd() + f'/files/{id}')
+                    self.y.download(file_name, os.getcwd() + file_name_zip)
+                    self.local_files.append(id)
+                    self.get_local_file(id, name)
+                    return 1
+                else:
+                    return -1
             except Exception:
                 # self.correct_output_lb.setText('Файл не найден')
-                return
+                return -1
 
     def save_file(self, id, full_file_name):
-        file_name = os.getcwd() + f'/files/{id}/{self.get_zip_name(os.path.basename(full_file_name))}'
+        file_name = os.getcwd() + f'/files/{id}/{self.get_only_name(os.path.basename(full_file_name))}'
+        file_name_zip = os.getcwd() + f'/files/{id}/{self.get_zip_name(os.path.basename(full_file_name))}'
         if self.local_files is not None and id in self.local_files and \
-                os.path.isfile(file_name):
-            return
+                os.path.isfile(file_name_zip):
+            with ZipFile(file_name, mode="r") as zip:
+                if os.path.basename(full_file_name) in zip.filelist:
+                    return 1
+                else:
+                    try:
+                        shutil.copy(full_file_name, os.getcwd())
+                        zip.write(os.path.basename(full_file_name))
+                        if not self.y.is_dir(f'/files/{id}/'):
+                            self.y.mkdir(f'/files/{id}/')
+                        self.y.upload(file_name, f'/files/{id}/{file_name_zip}', overwrite=True)
+                    except Exception:
+                        return -1
         if not os.path.isdir(os.getcwd() + '/files'):
             os.mkdir(os.getcwd() + '/files')
         if not os.path.isdir(os.getcwd() + f'/files/{id}'):
@@ -103,7 +132,7 @@ class Files:
             self.local_files.append(id)
             if self.global_files is not None and id in self.global_files:
                 if self.y.is_file(f'/files/{id}/{self.get_zip_name(os.path.basename(full_file_name))}'):
-                    return
+                    return 1
             if not self.y.is_dir(f'/files/{id}/'):
                 self.y.mkdir(f'/files/{id}/')
             self.y.upload(file_name, f'/files/{id}/{self.get_zip_name(os.path.basename(full_file_name))}')
@@ -112,10 +141,11 @@ class Files:
             if self.global_files is None:
                 self.global_files = []
             self.global_files.append(id)
+            return 1
         except Exception:
             return -1
 
-# files = Files()
+files = Files()
 # files.get_global_file('aacb990b-df04-48ee-a3c5-5472a68fd379', "27_A.txt")
 # files.save_file('aacb990b-df04-48ee-a3c5-5472a68fd379',
 #                  'C:/Users/grigorovich/Downloads/27_A.txt')
