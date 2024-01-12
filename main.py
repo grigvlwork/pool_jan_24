@@ -114,49 +114,59 @@ class MyWidget(QMainWindow, Ui_MainWindow):
         self.link_to_task_le.clear()
         self.link_to_task_le.setText(pyperclip.paste())
 
+    def prepare_file(self):
+        if self.files is None:
+            self.files = Files()
+        if len(self.link_to_task_le.text()) == 0:
+            QMessageBox.information(self,
+                                    'Информация', 'Добавьте ссылку на задачу',
+                                    QMessageBox.Ok)
+            return
+        id = self.files.get_id_from_url(self.link_to_task_le.text())
+        code = self.correct_code_pte.toPlainText()
+        file_name = self.files.get_filename_from_code(code)
+        if file_name != '':
+            if self.files.local_files is not None and id in self.files.local_files \
+                    and self.files.get_local_file(id, file_name) == 1:
+                QMessageBox.information(self,
+                                        'Информация', 'Файл скопирован в папку программы',
+                                        QMessageBox.Ok)
+            elif self.files.global_files is not None and id in self.files.global_files \
+                    and self.files.get_global_file(id, file_name) == 1:
+                QMessageBox.information(self,
+                                        'Информация', 'Файл скопирован в папку программы',
+                                        QMessageBox.Ok)
+            else:
+                if QMessageBox.information(self,
+                                           'Информация',
+                                           'Файл не найден в локальных папках и на сетевом диске,\n' +
+                                           ' скачайте его и нажмите ОК для выбора',
+                                           QMessageBox.Ok | QMessageBox.Cancel) == QMessageBox.Cancel:
+                    return
+                filename = ''
+                while os.path.basename(filename) != file_name:
+                    filename, ok = QFileDialog.getOpenFileName(
+                        None, 'Выбор файла', get_download_path(), 'Файлы данных к задачам (*.txt *.csv)', None
+                    )
+                    if filename is not None and os.path.basename(filename) != file_name:
+                        if QMessageBox.critical(self,
+                                                'Ошибка', 'Имя выбранного файла не соответствует\n' +
+                                                          'имени файла в программе. Скачайте другой файл',
+                                                QMessageBox.Ok | QMessageBox.Cancel) == QMessageBox.Cancel:
+                            return
+                        file_name = self.files.get_filename_from_code(code)
+                if filename:
+                    if self.files.save_file(id, filename) == 1:
+                        if self.files.get_local_file(id, os.path.basename(filename)) == 1:
+                            QMessageBox.information(self,
+                                                    'Информация', 'Файл скопирован в папку программы',
+                                                    QMessageBox.Ok)
+
     def link_to_task_changed(self):
         if self.files is None:
             self.files = Files()
         if len(self.link_to_task_le.text()) > 0:
-            id = self.files.get_id_from_url(self.link_to_task_le.text())
-            code = self.correct_code_pte.toPlainText()
-            file_name = self.files.get_filename_from_code(code)
-            if file_name != '':
-                if self.files.local_files is not None and id in self.files.local_files \
-                        and self.files.get_local_file(id, file_name) == 1:
-                    QMessageBox.information(self,
-                                            'Информация', 'Файл скопирован в папку программы',
-                                            QMessageBox.Ok)
-                elif self.files.global_files is not None and id in self.files.global_files \
-                        and self.files.get_global_file(id, file_name) == 1:
-                    QMessageBox.information(self,
-                                            'Информация', 'Файл скопирован в папку программы',
-                                            QMessageBox.Ok)
-                else:
-                    if QMessageBox.information(self,
-                                               'Информация',
-                                               'Файл не найден в локальных папках и на сетевом диске,\n' +
-                                               ' скачайте его и нажмите ОК для выбора',
-                                               QMessageBox.Ok | QMessageBox.Cancel) == QMessageBox.Cancel:
-                        return
-                    filename = ''
-                    while os.path.basename(filename) != file_name:
-                        filename, ok = QFileDialog.getOpenFileName(
-                            None, 'Выбор файла', get_download_path(), 'Файлы данных к задачам (*.txt *.csv)', None
-                        )
-                        if filename is not None and os.path.basename(filename) != file_name:
-                            if QMessageBox.critical(self,
-                                                    'Ошибка', 'Имя выбранного файла не соответствует\n' +
-                                                              'имени файла в программе. Скачайте другой файл',
-                                                    QMessageBox.Ok | QMessageBox.Cancel) == QMessageBox.Cancel:
-                                return
-                            file_name = self.files.get_filename_from_code(code)
-                    if filename:
-                        if self.files.save_file(id, filename) == 1:
-                            if self.files.get_local_file(id, os.path.basename(filename)) == 1:
-                                QMessageBox.information(self,
-                                                        'Информация', 'Файл скопирован в папку программы',
-                                                        QMessageBox.Ok)
+            self.prepare_file()
 
     def run_text(self, text, timeout):
         with open('code.py', 'w', encoding='utf-8') as c:
@@ -176,9 +186,6 @@ class MyWidget(QMainWindow, Ui_MainWindow):
                 t = t.encode('cp1251').decode('utf-8')
                 self.my_error_txt = t
                 self.result_run = t
-                # if len(t) > 50:
-                #     return t[:150] + '\n' + t[150:]
-                # else:
                 return t
         except subprocess.TimeoutExpired:
             return f'Программа выполнялась более {timeout} секунд'
@@ -217,9 +224,19 @@ class MyWidget(QMainWindow, Ui_MainWindow):
 
     def run_correct(self):
         code = self.correct_code_pte.toPlainText()
+        file_name = self.files.get_filename_from_code(code)
+        if len(file_name) > 0:
+            self.prepare_file()
+        code = self.correct_code_pte.toPlainText()
         timeout = self.timeout_sb.value()
         self.correct_output_lb.setText('Вывод: ' + self.run_text(remove_comments(code), timeout))
         self.correct_output_lb.setToolTip(self.result_run)
+        if len(file_name) > 0:
+            try:
+                os.remove(os.getcwd() + '/' + file_name)
+            except Exception:
+                pass
+
 
     def explanation_changed(self):
         self.explanation_text = self.explanation_pte.toPlainText()
