@@ -34,7 +34,7 @@ class Files:
 
     def get_filename_from_code(self, code):
         il = code.find('open(') + 5
-        if il == -1:
+        if il < 5:
             return ''
         ir = min(code.find(',', il + 1), code.find(')', il + 1))
         return code[il:ir].replace('"', '').replace("'", "").strip()

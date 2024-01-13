@@ -117,14 +117,15 @@ class MyWidget(QMainWindow, Ui_MainWindow):
     def prepare_file(self):
         if self.files is None:
             self.files = Files()
-        if len(self.link_to_task_le.text()) == 0:
-            QMessageBox.information(self,
-                                    'Информация', 'Добавьте ссылку на задачу',
-                                    QMessageBox.Ok)
-            return
-        id = self.files.get_id_from_url(self.link_to_task_le.text())
         code = self.correct_code_pte.toPlainText()
         file_name = self.files.get_filename_from_code(code)
+        if len(self.link_to_task_le.text()) == 0:
+            if len(file_name) > 0:
+                QMessageBox.information(self,
+                                        'Информация', 'Добавьте ссылку на задачу',
+                                        QMessageBox.Ok)
+            return
+        id = self.files.get_id_from_url(self.link_to_task_le.text())
         if file_name != '':
             if self.files.local_files is not None and id in self.files.local_files \
                     and self.files.get_local_file(id, file_name) == 1:
@@ -169,10 +170,10 @@ class MyWidget(QMainWindow, Ui_MainWindow):
             self.prepare_file()
 
     def run_text(self, text, timeout):
-        with open('code.py', 'w', encoding='utf-8') as c:
+        with open('_tmp.py', 'w', encoding='utf-8') as c:
             c.write(text)
         try:
-            completed_process = subprocess.run(['python', 'code.py'], capture_output=True, text=True, timeout=timeout)
+            completed_process = subprocess.run(['python', '_tmp.py'], capture_output=True, text=True, timeout=timeout)
             if completed_process.returncode == 0:
                 t = completed_process.stdout
                 t = t.encode('cp1251').decode('utf-8')
@@ -213,6 +214,7 @@ class MyWidget(QMainWindow, Ui_MainWindow):
     def clear_explanation(self):
         self.explanation_text = ''
         self.explanation_pte.clear()
+        # self.link_to_task_le.clear()
 
     def change_theme(self):
         if self.toggle_theme_btn.text() == 'Светлая тема':
@@ -224,6 +226,8 @@ class MyWidget(QMainWindow, Ui_MainWindow):
 
     def run_correct(self):
         code = self.correct_code_pte.toPlainText()
+        if self.files is None:
+            self.files = Files()
         file_name = self.files.get_filename_from_code(code)
         if len(file_name) > 0:
             self.prepare_file()
@@ -290,6 +294,7 @@ class MyWidget(QMainWindow, Ui_MainWindow):
 
     def paste_code(self):
         self.correct_code_pte.clear()
+        self.link_to_task_le.clear()
         self.correct_code_pte.appendPlainText(pyperclip.paste())
 
     def paste_explanation(self):

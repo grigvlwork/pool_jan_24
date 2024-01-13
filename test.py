@@ -25,3 +25,7 @@ y.download('/files/test/test.py', 'test1.py')
 # https://education.yandex.ru/ege/task/0f1bb8de-fe34-40c1-a82e-8d012e8519dc
 # with open('9.ods', 'w', encoding='utf-8') as c:
 # with open('9.csv', 'w', encoding='utf-8') as c:
+
+n_5 = 122
+n = int(n_5, 5)
+print(n)
