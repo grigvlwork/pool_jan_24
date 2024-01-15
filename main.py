@@ -151,8 +151,8 @@ class MyWidget(QMainWindow, Ui_MainWindow):
                     )
                     if filename is not None and os.path.basename(filename) != file_name:
                         if QMessageBox.critical(self,
-                                                'Ошибка', 'Имя выбранного файла не соответствует\n' +
-                                                          'имени файла в программе. Скачайте другой файл',
+                                                'Ошибка', f'Имя выбранного файла {os.path.basename(filename)} не соответствует\n' +
+                                                          f'имени файла в программе {file_name}. Скачайте другой файл',
                                                 QMessageBox.Ok | QMessageBox.Cancel) == QMessageBox.Cancel:
                             return
                         file_name = self.files.get_filename_from_code(code)
