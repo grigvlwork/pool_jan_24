@@ -93,7 +93,7 @@ class Files:
                             archive_new.write(os.path.basename(full_file_name))
                         if not self.y.is_dir(f'/files/{id}/'):
                             self.y.mkdir(f'/files/{id}/')
-                        self.y.upload(file_name, f'/files/{id}/{file_name}', overwrite=True)
+                        self.y.upload(file_name, f'/files/{id}/{filename}', overwrite=True)
                         os.remove(os.getcwd() + '/' + filename)
                     except Exception:
                         return -1
