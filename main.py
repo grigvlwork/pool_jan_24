@@ -266,6 +266,7 @@ class MyWidget(QMainWindow, Ui_MainWindow):
             errors = spell_check(self.explanation_pte.toPlainText())
             if self.allow_spell_check and len(errors) > 0 or self.explanation_pte.toPlainText().count('```') % 2 != 0 \
                     or self.explanation_pte.toPlainText().count('`') % 2 != 0:
+                pyperclip.copy('')
                 s = 'Обнаружены ошибки в тексте, всё равно скопировать?\n'
                 for err in errors:
                     s += err[0] + ':    ' + err[1] + '\n'
@@ -279,7 +280,8 @@ class MyWidget(QMainWindow, Ui_MainWindow):
         if self.explanation_pte.toPlainText().count('```') % 2 != 0:
             message = QMessageBox.question(self, "Ошибки", 'Непарное количество бэктиков',
                                            QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-
+            if message != QMessageBox.Yes:
+                return
         pyperclip.copy(self.my_answer_pte.toPlainText())
 
     def correct_row_generator(self):
