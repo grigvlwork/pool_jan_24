@@ -36,8 +36,12 @@ class Files:
         il = code.find('open(') + 5
         if il < 5:
             return ''
-        ir = min(code.find(',', il + 1), code.find(')', il + 1))
-        return code[il:ir].replace('"', '').replace("'", "").strip()
+        if code.find(',', il + 1) > 0:
+            ir = min(code.find(',', il + 1), code.find(')', il + 1))
+        else:
+            ir = code.find(')', il + 1)
+        res = code[il:ir].replace('"', '').replace("'", "").strip()
+        return res
 
     # def get_zip_name(self, name):
     #     return name[:name.rfind('.')] + '.zip'
