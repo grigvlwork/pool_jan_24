@@ -33,18 +33,12 @@ class Files:
         return url[url.rfind('/') + 1:]
 
     def get_filename_from_code(self, code):
-        il = code.find('open(') + 5
-        if il < 5:
+        if 'open' not in code:
             return ''
-        if code.find(',', il + 1) > 0:
-            ir = min(code.find(',', il + 1), code.find(')', il + 1))
-        else:
-            ir = code.find(')', il + 1)
-        res = code[il:ir].replace('"', '').replace("'", "").strip()
+        il = code.find('open(')
+        code = code[:code.find('\n', il)].replace('"', "'")
+        res = code.split("'")[1]
         return res
-
-    # def get_zip_name(self, name):
-    #     return name[:name.rfind('.')] + '.zip'
 
     def get_only_name(self, name):
         return name[:name.rfind('.')]
