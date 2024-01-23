@@ -37,6 +37,8 @@ class Files:
             return ''
         il = code.find('open(')
         code = code[:code.find('\n', il)].replace('"', "'")
+        if code.count("'") < 2:
+            return ''
         res = code.split("'")[1]
         return res
 
