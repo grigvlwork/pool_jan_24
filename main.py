@@ -70,9 +70,16 @@ def spell_check(text):
 def check_dict():
     file1 = '/_venv/Lib/site-packages/enchant/data/mingw64/share/enchant/hunspell/ru_RU.aff'
     file2 = '/_venv/Lib/site-packages/enchant/data/mingw64/share/enchant/hunspell/ru_RU.dic'
-    file_path1 = os.getcwd() + '/venv/Lib/site-packages/enchant/data/mingw64/share/enchant/hunspell/ru_RU.aff'
-    file_path2 = os.getcwd() + '/venv/Lib/site-packages/enchant/data/mingw64/share/enchant/hunspell/ru_RU.dic'
-    file_path = os.getcwd() + '/venv/Lib/site-packages/enchant/data/mingw64/share/enchant/hunspell/'
+    if os.path.exists(os.getcwd() + '/venv'):
+        file_path1 = os.getcwd() + '/venv/Lib/site-packages/enchant/data/mingw64/share/enchant/hunspell/ru_RU.aff'
+        file_path2 = os.getcwd() + '/venv/Lib/site-packages/enchant/data/mingw64/share/enchant/hunspell/ru_RU.dic'
+        file_path = os.getcwd() + '/venv/Lib/site-packages/enchant/data/mingw64/share/enchant/hunspell/'
+    elif os.path.exists(os.getcwd() + '/.venv'):
+        file_path1 = os.getcwd() + '/.venv/Lib/site-packages/enchant/data/mingw64/share/enchant/hunspell/ru_RU.aff'
+        file_path2 = os.getcwd() + '/.venv/Lib/site-packages/enchant/data/mingw64/share/enchant/hunspell/ru_RU.dic'
+        file_path = os.getcwd() + '/.venv/Lib/site-packages/enchant/data/mingw64/share/enchant/hunspell/'
+    else:
+        return False
     try:
         if (not os.path.exists(file_path1)) or (not os.path.exists(file_path2)):
             for file in glob.glob(os.getcwd() + file1):
