@@ -100,6 +100,7 @@ class MyWidget(QMainWindow, Ui_MainWindow):
         self.answer_number = 0
         self.allow_spell_check = check_dict()
         self.correct_code_model = QStandardItemModel()
+        self.linked_answers_model = QStandardItemModel()
         self.explanation_pte.textChanged.connect(self.explanation_changed)
         self.run_btn.clicked.connect(self.run_correct)
         self.toggle_theme_btn.clicked.connect(self.change_theme)
@@ -221,6 +222,7 @@ class MyWidget(QMainWindow, Ui_MainWindow):
     def clear_explanation(self):
         self.explanation_text = ''
         self.explanation_pte.clear()
+        self.save_btn.setEnabled(False)
         # self.link_to_task_le.clear()
 
     def change_theme(self):
@@ -289,6 +291,7 @@ class MyWidget(QMainWindow, Ui_MainWindow):
                                            QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
             if message != QMessageBox.Yes:
                 return
+        self.save_btn.setEnabled(True)
         pyperclip.copy(self.my_answer_pte.toPlainText())
 
     def correct_row_generator(self):
@@ -307,6 +310,7 @@ class MyWidget(QMainWindow, Ui_MainWindow):
         self.correct_code_pte.appendPlainText(pyperclip.paste())
 
     def paste_explanation(self):
+        self.save_btn.setEnabled(False)
         self.explanation_pte.clear()
         self.explanation_pte.appendPlainText(pyperclip.paste())
 
