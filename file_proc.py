@@ -3,6 +3,7 @@ import yadisk
 import shutil
 import glob
 from py7zr import SevenZipFile as zf7
+import zlib
 
 
 class Files:
@@ -122,6 +123,46 @@ class Files:
             return 1
         except Exception:
             return -1
+
+    def save_solution(self, text, id):
+        temp_path = os.getcwd() + '/'
+        if not os.path.exists(os.getcwd() + f'/files/{id}'):
+            os.mkdir(os.getcwd() + f'/files/{id}')
+        tmp_solution_name = temp_path + hex(zlib.crc32(text.encode('utf-8')) % 2 ** 32)[2:]
+        arc_solution_mame = os.getcwd() + f'/files/{id}/solutions'
+        try:
+            with open(tmp_solution_name, 'w') as f:
+                f.write(text)
+        except:
+            return False
+        if not os.path.isfile(arc_solution_mame):
+            try:
+                with zf7(arc_solution_mame, 'w') as archive:
+                    archive.write(os.path.basename(tmp_solution_name))
+            except:
+                return False
+        else:
+            try:
+                with zf7(arc_solution_mame, 'a') as archive:
+                    archive.write(os.path.basename(tmp_solution_name))
+            except:
+                return False
+        if os.path.isfile(tmp_solution_name):
+            os.remove(tmp_solution_name)
+        return True
+
+    def load_solutions(self, id):
+        result = []
+        arc_solution_mame = os.getcwd() + f'/files/{id}/solutions'
+        if os.path.isfile(arc_solution_mame):
+            try:
+                with zf7(arc_solution_mame, 'r') as archive:
+                    for file in archive.getnames():
+                        text = archive.read(targets=file)
+                        result.append([file, text[file].read().decode('utf-8')])
+            except:
+                pass
+        return result
 
 
 files = Files()
