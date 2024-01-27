@@ -188,6 +188,7 @@ class Files:
                             new_arc.extract(path=os.getcwd(), targets=[name])
                             old_arc.write(name)
                             os.remove(os.getcwd() + '/' + name)
+            os.remove(os.getcwd() + temp_file_name)
             return 1
         except Exception:
             return -1

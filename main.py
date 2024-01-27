@@ -1,4 +1,5 @@
 import sys
+import threading
 import traceback
 import subprocess
 import pyperclip
@@ -124,8 +125,11 @@ class MyWidget(QMainWindow, Ui_MainWindow):
 
     def insert_link(self):
         self.link_to_task_le.clear()
+        t = threading.Thread(target=self.load_solutions())
+        t.start()
         self.link_to_task_le.setText(pyperclip.paste())
-        self.load_solutions()
+        t.join()
+
 
     def save_solution(self):
         id = self.files.get_id_from_url(self.link_to_task_le.text())
@@ -146,6 +150,7 @@ class MyWidget(QMainWindow, Ui_MainWindow):
             return
         else:
             id = self.files.get_id_from_url(self.link_to_task_le.text())
+            self.files.download_solution(id)
             self.linked_answers = self.files.load_solutions(id)
             if len(self.linked_answers) > 0:
                 self.linked_answers_model.clear()
