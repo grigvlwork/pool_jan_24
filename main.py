@@ -125,10 +125,10 @@ class MyWidget(QMainWindow, Ui_MainWindow):
 
     def insert_link(self):
         self.link_to_task_le.clear()
+        self.link_to_task_le.setText(pyperclip.paste())
         t = threading.Thread(target=self.load_solutions())
         t.start()
-        self.link_to_task_le.setText(pyperclip.paste())
-        t.join()
+        # t.join()
 
 
     def save_solution(self):
