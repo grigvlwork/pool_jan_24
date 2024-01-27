@@ -21,6 +21,7 @@ from mainwindow import Ui_MainWindow
 import requests
 import winreg
 from file_proc import Files
+from threading import Thread
 
 
 def remove_comments(code):
