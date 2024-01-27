@@ -159,32 +159,37 @@ class Files:
         return True
 
     def download_solution(self, id):
-        if id in self.global_files:
-            try:
-                file_name = f'/files/{id}/solutions'
-                temp_file_name = f'/files/{id}/tmp_solutions'
-                if self.y.is_file(file_name):
-                    if not os.path.isdir(os.getcwd() + '/files'):
-                        os.mkdir(os.getcwd() + '/files')
-                    os.mkdir(os.getcwd() + f'/files/{id}')
-                    self.y.download(file_name, os.getcwd() + temp_file_name)
-                else:
-                    return -1
-            except Exception:
+        try:
+            file_name = f'/files/{id}/solutions'
+            temp_file_name = f'/files/{id}/tmp_solutions'
+            if self.y.is_file(file_name):
+                if not os.path.isdir(os.getcwd() + '/files'):
+                    os.mkdir(os.getcwd() + '/files')
+                os.mkdir(os.getcwd() + f'/files/{id}')
+                self.y.download(file_name, os.getcwd() + temp_file_name)
+            else:
                 return -1
+        except Exception:
+            return -1
+        if not os.path.isfile(os.getcwd() + file_name):
             try:
-                if os.path.isfile(os.getcwd() + temp_file_name) and \
-                        os.path.isfile(os.getcwd() + file_name):
-                    with zf7(os.getcwd() + temp_file_name, 'r') as new_arc:
-                        with zf7(os.getcwd() + file_name, 'a') as old_arc:
-                            for name in new_arc.getnames():
-                                if name not in old_arc.getnames():
-                                    new_arc.extract(path=os.getcwd(), targets=[name])
-                                    old_arc.write(name)
-                                    os.remove(os.getcwd() + '/' + name)
+                for file in glob.glob(os.getcwd() + temp_file_name):
+                    shutil.copy(file, file_name)
+                os.remove(os.getcwd() + temp_file_name)
                 return 1
-            except Exception:
+            except:
                 return -1
+        try:
+            with zf7(os.getcwd() + temp_file_name, 'r') as new_arc:
+                with zf7(os.getcwd() + file_name, 'a') as old_arc:
+                    for name in new_arc.getnames():
+                        if name not in old_arc.getnames():
+                            new_arc.extract(path=os.getcwd(), targets=[name])
+                            old_arc.write(name)
+                            os.remove(os.getcwd() + '/' + name)
+            return 1
+        except Exception:
+            return -1
 
     def load_solutions(self, id):
         result = []
