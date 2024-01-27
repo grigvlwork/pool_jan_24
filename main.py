@@ -130,7 +130,6 @@ class MyWidget(QMainWindow, Ui_MainWindow):
         t.start()
         # t.join()
 
-
     def save_solution(self):
         id = self.files.get_id_from_url(self.link_to_task_le.text())
         if self.files.save_solution(self.explanation_pte.toPlainText(), id):
@@ -140,6 +139,19 @@ class MyWidget(QMainWindow, Ui_MainWindow):
         else:
             QMessageBox.information(self,
                                     'Информация', 'Не удалось сохранить',
+                                    QMessageBox.Ok)
+        try:
+            if self.files.upload_solution() == 1:
+                QMessageBox.information(self,
+                                        'Информация', 'Успешно загружено на диск',
+                                        QMessageBox.Ok)
+            else:
+                QMessageBox.information(self,
+                                        'Информация', 'Не удалось загрузить',
+                                        QMessageBox.Ok)
+        except Exception:
+            QMessageBox.information(self,
+                                    'Информация', 'Не удалось загрузить',
                                     QMessageBox.Ok)
 
     def load_solutions(self):

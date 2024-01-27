@@ -140,8 +140,6 @@ class Files:
         except Exception:
             return -1
 
-
-
     def save_solution(self, text, id):
         temp_path = os.getcwd() + '/'
         if not os.path.exists(os.getcwd() + f'/files'):
