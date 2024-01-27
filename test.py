@@ -33,4 +33,4 @@
 from file_proc import Files
 
 f = Files()
-f.download_solution('ebbc8b9f-d709-47ff-b8f4-2c2e99ccb13b')
+print(f.upload_solution('ebbc8b9f-d709-47ff-b8f4-2c2e99ccb13b'))

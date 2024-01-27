@@ -129,6 +129,19 @@ class Files:
         except Exception:
             return -1
 
+    def upload_solution(self, id):
+        arc_solution_name = os.getcwd() + f'/files/{id}/solutions'
+        dest = f'/files/{id}/solutions'
+        if not os.path.isfile(arc_solution_name):
+            return -1
+        try:
+            self.y.upload(arc_solution_name, dest, overwrite=True)
+            return 1
+        except Exception:
+            return -1
+
+
+
     def save_solution(self, text, id):
         temp_path = os.getcwd() + '/'
         if not os.path.exists(os.getcwd() + f'/files'):
