@@ -36,8 +36,13 @@ class Files:
     def get_filename_from_code(self, code):
         if 'open' not in code:
             return ''
-        il = code.find('open(')
-        code = code[:code.find('\n', il)].replace('"', "'")
+        while 'open ' in code:
+            code = code.replace('open ', 'open')
+        if code.find('open(') > -1:
+            il = code.find('open(')
+        else:
+            return ''
+        code = code[il:code.find('\n', il)].replace('"', "'")
         if code.count("'") < 2:
             return ''
         res = code.split("'")[1]
