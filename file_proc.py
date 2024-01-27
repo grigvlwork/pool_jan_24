@@ -135,6 +135,8 @@ class Files:
         if not os.path.isfile(arc_solution_name):
             return -1
         try:
+            if not self.y.is_dir(f'/files/{id}'):
+                self.y.mkdir(f'/files/{id}')
             self.y.upload(arc_solution_name, dest, overwrite=True)
             return 1
         except Exception:
