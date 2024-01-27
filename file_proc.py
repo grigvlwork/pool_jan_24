@@ -165,7 +165,8 @@ class Files:
             if self.y.is_file(file_name):
                 if not os.path.isdir(os.getcwd() + '/files'):
                     os.mkdir(os.getcwd() + '/files')
-                os.mkdir(os.getcwd() + f'/files/{id}')
+                if not os.path.isdir(os.getcwd() + f'/files/{id}'):
+                    os.mkdir(os.getcwd() + f'/files/{id}')
                 self.y.download(file_name, os.getcwd() + temp_file_name)
             else:
                 return -1
@@ -173,9 +174,9 @@ class Files:
             return -1
         if not os.path.isfile(os.getcwd() + file_name):
             try:
-                for file in glob.glob(os.getcwd() + temp_file_name):
-                    shutil.copy(file, file_name)
-                os.remove(os.getcwd() + temp_file_name)
+                # for file in glob.glob(os.getcwd() + temp_file_name):
+                #     shutil.copy(file, file_name)
+                os.rename(os.getcwd() + temp_file_name, os.getcwd() + file_name)
                 return 1
             except:
                 return -1
