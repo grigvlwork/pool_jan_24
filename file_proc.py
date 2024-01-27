@@ -126,6 +126,8 @@ class Files:
 
     def save_solution(self, text, id):
         temp_path = os.getcwd() + '/'
+        if not os.path.exists(os.getcwd() + f'/files'):
+            os.mkdir(os.getcwd() + f'/files')
         if not os.path.exists(os.getcwd() + f'/files/{id}'):
             os.mkdir(os.getcwd() + f'/files/{id}')
         tmp_solution_name = temp_path + hex(zlib.crc32(text.encode('utf-8')) % 2 ** 32)[2:]

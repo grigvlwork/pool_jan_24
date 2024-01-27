@@ -101,6 +101,8 @@ class MyWidget(QMainWindow, Ui_MainWindow):
         self.allow_spell_check = check_dict()
         self.correct_code_model = QStandardItemModel()
         self.linked_answers_model = QStandardItemModel()
+        self.linked_answers_list = []
+        self.answers_tw.setTabVisible(1, False)
         self.explanation_pte.textChanged.connect(self.explanation_changed)
         self.run_btn.clicked.connect(self.run_correct)
         self.toggle_theme_btn.clicked.connect(self.change_theme)
@@ -113,6 +115,7 @@ class MyWidget(QMainWindow, Ui_MainWindow):
         self.setWindowTitle(f'Пул январь 2024 {self.check_version()}')
         self.link_to_task_le.textChanged.connect(self.link_to_task_changed)
         self.link_pb.clicked.connect(self.insert_link)
+        self.save_btn.clicked.connect(self.save_solution)
         self.my_error_txt = ''
         self.files = None
         self.file_name = None
@@ -121,6 +124,17 @@ class MyWidget(QMainWindow, Ui_MainWindow):
     def insert_link(self):
         self.link_to_task_le.clear()
         self.link_to_task_le.setText(pyperclip.paste())
+
+    def save_solution(self):
+        id = self.files.get_id_from_url(self.link_to_task_le.text())
+        if self.files.save_solution(self.explanation_pte.toPlainText(), id):
+            QMessageBox.information(self,
+                                    'Информация', 'Успешно сохранено',
+                                    QMessageBox.Ok)
+        else:
+            QMessageBox.information(self,
+                                    'Информация', 'Не удалось сохранить',
+                                    QMessageBox.Ok)
 
     def prepare_file(self):
         if self.files is None:
@@ -303,6 +317,17 @@ class MyWidget(QMainWindow, Ui_MainWindow):
             self.correct_code_tv.setModel(self.correct_code_model)
             self.correct_code_tv.horizontalHeader().setVisible(False)
             self.correct_code_tv.resizeColumnToContents(0)
+
+    def linked_answers_generator(self):
+        if len(self.linked_answers_list) == 0:
+            self.answers_tw.setTabVisible(1, False)
+            return
+        if self.answers_tw.currentIndex() == 1:
+            self.linked_answers_model.clear()
+            for row in self.linked_answers_list:
+                it = [QStandardItem(row[0]), QStandardItem(row[1])]
+                self.linked_answers_model.appendRow(it)
+
 
     def paste_code(self):
         self.correct_code_pte.clear()
