@@ -143,7 +143,7 @@ class MyWidget(QMainWindow, Ui_MainWindow):
         try:
             if self.files.upload_solution(id) == 1:
                 QMessageBox.information(self,
-                                        'Информация', 'Успешно загружено на диск',
+                                        'Информация', 'Успешно загружено на Яндекс-диск',
                                         QMessageBox.Ok)
             else:
                 QMessageBox.information(self,
