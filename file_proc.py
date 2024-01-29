@@ -137,7 +137,7 @@ class Files:
         try:
             if not self.y.is_dir(f'/files/{id}'):
                 self.y.mkdir(f'/files/{id}')
-            self.y.upload(arc_solution_name, dest, overwrite=True, n_retries=5, retry_interval=3)
+            self.y.upload(arc_solution_name, dest, overwrite=True)
             return 1
         except Exception:
             return -1
