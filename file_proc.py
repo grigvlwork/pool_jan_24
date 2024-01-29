@@ -31,7 +31,7 @@ class Files:
             self.token = t['config.tmp'].read().decode('utf-8')
 
     def get_id_from_url(self, url):
-        return url[url.rfind('/') + 1:]
+        return url[url.strip().rfind('/') + 1:]
 
     def get_filename_from_code(self, code):
         if 'open' not in code:
