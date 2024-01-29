@@ -4,6 +4,7 @@ import shutil
 import glob
 from py7zr import SevenZipFile as zf7
 import zlib
+import chardet
 
 
 class Files:
@@ -213,25 +214,20 @@ class Files:
         result = []
         arc_solution_mame = os.getcwd() + f'/files/{id}/solutions'
         if os.path.isfile(arc_solution_mame):
-            encoding = 'utf-8'
             try:
                 with zf7(arc_solution_mame, 'r') as archive:
                     for file in archive.getnames():
                         # if file == 'filler':
                         #     continue
                         text = archive.read(targets=file)
+                        text = text[file].read()
+                        encoding = chardet.detect(text)['encoding']
                         try:
-                            result.append([file, text[file].read().decode(encoding)])
+                            result.append([file, text.decode(encoding)])
                         except Exception:
-                            encoding == 'win-1251'
-                            try:
-                                text = archive.read(targets=file)
-                                result.append([file, text[file].read().decode(encoding)])
-                            except Exception:
-                                pass
+                            pass
             except Exception:
                 pass
-
         return result
 
 
