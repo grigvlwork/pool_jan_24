@@ -136,7 +136,7 @@ class MyWidget(QMainWindow, Ui_MainWindow):
         self.link_to_task_le.setText(pyperclip.paste())
         t = threading.Thread(target=self.load_solutions())
         t.start()
-        # t.join()
+        t.join()
 
     def save_solution(self):
         id = self.files.get_id_from_url(self.link_to_task_le.text())

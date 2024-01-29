@@ -16,3 +16,5 @@ def to3(n):
   if n == 0: return('0')
   res = ''
 ```
+
+https://education.yandex.ru/ege/task/ce959cfe-67fa-4b05-81dc-6a387f57d9a7

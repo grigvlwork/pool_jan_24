@@ -213,15 +213,25 @@ class Files:
         result = []
         arc_solution_mame = os.getcwd() + f'/files/{id}/solutions'
         if os.path.isfile(arc_solution_mame):
+            encoding = 'utf-8'
             try:
                 with zf7(arc_solution_mame, 'r') as archive:
                     for file in archive.getnames():
                         # if file == 'filler':
                         #     continue
                         text = archive.read(targets=file)
-                        result.append([file, text[file].read().decode('utf-8')])
-            except:
+                        try:
+                            result.append([file, text[file].read().decode(encoding)])
+                        except Exception:
+                            encoding == 'win-1251'
+                            try:
+                                text = archive.read(targets=file)
+                                result.append([file, text[file].read().decode(encoding)])
+                            except Exception:
+                                pass
+            except Exception:
                 pass
+
         return result
 
 
