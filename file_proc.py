@@ -165,6 +165,8 @@ class Files:
         else:
             try:
                 with zf7(arc_solution_mame, 'a') as archive:
+                    if hex(zlib.crc32(text.encode('utf-8')) % 2 ** 32)[2:] in archive.getnames():
+                        return True
                     archive.write(os.path.basename(tmp_solution_name))
             except:
                 return False
