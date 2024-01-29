@@ -159,6 +159,7 @@ class Files:
             try:
                 with zf7(arc_solution_mame, 'w') as archive:
                     archive.write(os.path.basename(tmp_solution_name))
+                    # archive.write('filler')
             except:
                 return False
         else:
@@ -213,6 +214,8 @@ class Files:
             try:
                 with zf7(arc_solution_mame, 'r') as archive:
                     for file in archive.getnames():
+                        # if file == 'filler':
+                        #     continue
                         text = archive.read(targets=file)
                         result.append([file, text[file].read().decode('utf-8')])
             except:

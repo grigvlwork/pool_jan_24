@@ -141,7 +141,7 @@ class MyWidget(QMainWindow, Ui_MainWindow):
                                     'Информация', 'Не удалось сохранить',
                                     QMessageBox.Ok)
         try:
-            if self.files.upload_solution() == 1:
+            if self.files.upload_solution(id) == 1:
                 QMessageBox.information(self,
                                         'Информация', 'Успешно загружено на диск',
                                         QMessageBox.Ok)
