@@ -118,12 +118,20 @@ class MyWidget(QMainWindow, Ui_MainWindow):
         self.link_to_task_le.textChanged.connect(self.link_to_task_changed)
         self.link_pb.clicked.connect(self.insert_link)
         self.save_btn.clicked.connect(self.save_solution)
+        self.answers_tv.clicked.connect(self.select_answer)
+        self.copy_in_my_answer_btn.clicked.connect(self.copy_in_my_answer)
+        self.answer = ''
         self.my_error_txt = ''
         self.files = None
         self.file_name = None
         # https://dev.to/ashishpandey/say-goodbye-to-chrome-build-your-own-browser-with-pyqt5-and-python-23ld
 
+    def select_answer(self):
+        self.answer = self.linked_answers_model.data(self.answers_tv.selectedIndexes()[0], 0)
+        # print(answer)
+
     def insert_link(self):
+        self.copy_in_my_answer_btn.setEnabled(False)
         self.link_to_task_le.clear()
         self.link_to_task_le.setText(pyperclip.paste())
         t = threading.Thread(target=self.load_solutions())
@@ -167,13 +175,23 @@ class MyWidget(QMainWindow, Ui_MainWindow):
             if len(self.linked_answers) > 0:
                 self.linked_answers_model.clear()
                 for row in self.linked_answers:
-                    temp_row = [QStandardItem(row[0]), QStandardItem(row[1])]
+                    # temp_row = [QStandardItem(row[0]), QStandardItem(row[1])]
+                    temp_row = [QStandardItem(row[1])]
                     self.linked_answers_model.appendRow(temp_row)
                 self.answers_tv.setModel(self.linked_answers_model)
                 self.answers_tw.setTabVisible(1, True)
                 self.answers_tv.horizontalHeader().setVisible(False)
                 self.answers_tv.resizeColumnsToContents()
                 self.answers_tv.resizeRowsToContents()
+                self.copy_in_my_answer_btn.setEnabled(True)
+
+    def copy_in_my_answer(self):
+        if self.answer == '':
+            self.copy_in_my_answer_btn.setEnabled(False)
+            return
+        else:
+            self.explanation_pte.setPlainText(self.answer)
+
 
     def prepare_file(self):
         if self.files is None:
