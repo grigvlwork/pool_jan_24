@@ -1,4 +1,5 @@
 import sys
+import threading
 import traceback
 import subprocess
 import pyperclip
@@ -21,6 +22,7 @@ from mainwindow import Ui_MainWindow
 import requests
 import winreg
 from file_proc import Files
+from threading import Thread
 
 
 def remove_comments(code):
@@ -124,6 +126,9 @@ class MyWidget(QMainWindow, Ui_MainWindow):
     def insert_link(self):
         self.link_to_task_le.clear()
         self.link_to_task_le.setText(pyperclip.paste())
+        t = threading.Thread(target=self.load_solutions())
+        t.start()
+        # t.join()
 
     def save_solution(self):
         id = self.files.get_id_from_url(self.link_to_task_le.text())
@@ -135,6 +140,40 @@ class MyWidget(QMainWindow, Ui_MainWindow):
             QMessageBox.information(self,
                                     'Информация', 'Не удалось сохранить',
                                     QMessageBox.Ok)
+        try:
+            if self.files.upload_solution(id) == 1:
+                QMessageBox.information(self,
+                                        'Информация', 'Успешно загружено на Яндекс-диск',
+                                        QMessageBox.Ok)
+            else:
+                QMessageBox.information(self,
+                                        'Информация', 'Не удалось загрузить',
+                                        QMessageBox.Ok)
+        except Exception:
+            QMessageBox.information(self,
+                                    'Информация', 'Не удалось загрузить',
+                                    QMessageBox.Ok)
+
+    def load_solutions(self):
+        if len(self.link_to_task_le.text()) == 0:
+            self.linked_answers_model.clear()
+            self.linked_answers_list = []
+            self.answers_tw.setTabVisible(1, False)
+            return
+        else:
+            id = self.files.get_id_from_url(self.link_to_task_le.text())
+            self.files.download_solution(id)
+            self.linked_answers = self.files.load_solutions(id)
+            if len(self.linked_answers) > 0:
+                self.linked_answers_model.clear()
+                for row in self.linked_answers:
+                    temp_row = [QStandardItem(row[0]), QStandardItem(row[1])]
+                    self.linked_answers_model.appendRow(temp_row)
+                self.answers_tv.setModel(self.linked_answers_model)
+                self.answers_tw.setTabVisible(1, True)
+                self.answers_tv.horizontalHeader().setVisible(False)
+                self.answers_tv.resizeColumnsToContents()
+                self.answers_tv.resizeRowsToContents()
 
     def prepare_file(self):
         if self.files is None:
@@ -173,8 +212,9 @@ class MyWidget(QMainWindow, Ui_MainWindow):
                     )
                     if filename is not None and os.path.basename(filename) != file_name:
                         if QMessageBox.critical(self,
-                                                'Ошибка', f'Имя выбранного файла {os.path.basename(filename)} не соответствует\n' +
-                                                          f'имени файла в программе {file_name}. Скачайте другой файл',
+                                                'Ошибка',
+                                                f'Имя выбранного файла {os.path.basename(filename)} не соответствует\n' +
+                                                f'имени файла в программе {file_name}. Скачайте другой файл',
                                                 QMessageBox.Ok | QMessageBox.Cancel) == QMessageBox.Cancel:
                             return
                         file_name = self.files.get_filename_from_code(code)
@@ -264,7 +304,6 @@ class MyWidget(QMainWindow, Ui_MainWindow):
             except Exception:
                 pass
 
-
     def explanation_changed(self):
         self.explanation_text = self.explanation_pte.toPlainText()
         self.set_my_answer()
@@ -327,7 +366,6 @@ class MyWidget(QMainWindow, Ui_MainWindow):
             for row in self.linked_answers_list:
                 it = [QStandardItem(row[0]), QStandardItem(row[1])]
                 self.linked_answers_model.appendRow(it)
-
 
     def paste_code(self):
         self.correct_code_pte.clear()

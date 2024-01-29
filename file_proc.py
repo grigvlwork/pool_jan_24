@@ -31,13 +31,18 @@ class Files:
             self.token = t['config.tmp'].read().decode('utf-8')
 
     def get_id_from_url(self, url):
-        return url[url.rfind('/') + 1:]
+        return url[url.strip().rfind('/') + 1:]
 
     def get_filename_from_code(self, code):
         if 'open' not in code:
             return ''
-        il = code.find('open(')
-        code = code[:code.find('\n', il)].replace('"', "'")
+        while 'open ' in code:
+            code = code.replace('open ', 'open')
+        if code.find('open(') > -1:
+            il = code.find('open(')
+        else:
+            return ''
+        code = code[il:code.find('\n', il)].replace('"', "'")
         if code.count("'") < 2:
             return ''
         res = code.split("'")[1]
@@ -124,6 +129,19 @@ class Files:
         except Exception:
             return -1
 
+    def upload_solution(self, id):
+        arc_solution_name = os.getcwd() + f'/files/{id}/solutions'
+        dest = f'/files/{id}/solutions'
+        if not os.path.isfile(arc_solution_name):
+            return -1
+        try:
+            if not self.y.is_dir(f'/files/{id}'):
+                self.y.mkdir(f'/files/{id}')
+            self.y.upload(arc_solution_name, dest, overwrite=True)
+            return 1
+        except Exception:
+            return -1
+
     def save_solution(self, text, id):
         temp_path = os.getcwd() + '/'
         if not os.path.exists(os.getcwd() + f'/files'):
@@ -141,6 +159,7 @@ class Files:
             try:
                 with zf7(arc_solution_mame, 'w') as archive:
                     archive.write(os.path.basename(tmp_solution_name))
+                    # archive.write('filler')
             except:
                 return False
         else:
@@ -153,6 +172,41 @@ class Files:
             os.remove(tmp_solution_name)
         return True
 
+    def download_solution(self, id):
+        try:
+            file_name = f'/files/{id}/solutions'
+            temp_file_name = f'/files/{id}/tmp_solutions'
+            if self.y.is_file(file_name):
+                if not os.path.isdir(os.getcwd() + '/files'):
+                    os.mkdir(os.getcwd() + '/files')
+                if not os.path.isdir(os.getcwd() + f'/files/{id}'):
+                    os.mkdir(os.getcwd() + f'/files/{id}')
+                self.y.download(file_name, os.getcwd() + temp_file_name)
+            else:
+                return -1
+        except Exception:
+            return -1
+        if not os.path.isfile(os.getcwd() + file_name):
+            try:
+                # for file in glob.glob(os.getcwd() + temp_file_name):
+                #     shutil.copy(file, file_name)
+                os.rename(os.getcwd() + temp_file_name, os.getcwd() + file_name)
+                return 1
+            except:
+                return -1
+        try:
+            with zf7(os.getcwd() + temp_file_name, 'r') as new_arc:
+                with zf7(os.getcwd() + file_name, 'a') as old_arc:
+                    for name in new_arc.getnames():
+                        if name not in old_arc.getnames():
+                            new_arc.extract(path=os.getcwd(), targets=[name])
+                            old_arc.write(name)
+                            os.remove(os.getcwd() + '/' + name)
+            os.remove(os.getcwd() + temp_file_name)
+            return 1
+        except Exception:
+            return -1
+
     def load_solutions(self, id):
         result = []
         arc_solution_mame = os.getcwd() + f'/files/{id}/solutions'
@@ -160,6 +214,8 @@ class Files:
             try:
                 with zf7(arc_solution_mame, 'r') as archive:
                     for file in archive.getnames():
+                        # if file == 'filler':
+                        #     continue
                         text = archive.read(targets=file)
                         result.append([file, text[file].read().decode('utf-8')])
             except:

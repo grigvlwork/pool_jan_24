@@ -1,0 +1,18 @@
+https://education.yandex.ru/ege/task/a787ce29-0649-4566-a463-0869774a61dc
+v = open("9.csv", 'r')
+a = 0
+for i in v:
+    v.readline(i)
+    if v.readline(i)[0] % 4 == 0 or v.readline(i)[0] % 400 == 0 and v.readline(i)[0] % 100 > 0:
+        if v.readline(i)[1] == 10 and v.readline(i)[3] == "ж":
+            a += 1
+print(a)
+
+https://education.yandex.ru/ege/task/ce959cfe-67fa-4b05-81dc-6a387f57d9a7
+
+Ошибка из-за неверного перевода чисел в троичную систему, при нулевом `n` функция `to3` возвращает пустую строку, добавь обработку этого случая в строку 2, вот так правильно:
+```
+def to3(n):
+  if n == 0: return('0')
+  res = ''
+```
