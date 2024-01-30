@@ -199,6 +199,17 @@ class MyWidget(QMainWindow, Ui_MainWindow):
                 self.copy_in_my_answer_btn.setEnabled(True)
 
     def copy_in_my_answer(self):
+        if len(self.link_to_task_le.text()) == 0:
+            QMessageBox.information(self,
+                                    'Информация', 'Добавьте ссылку на задачу',
+                                    QMessageBox.Ok)
+            return
+        id = self.files.get_id_from_url(self.link_to_task_le.text())
+        if '-' not in id:
+            QMessageBox.information(self,
+                                    'Информация', 'Добавьте ссылку на задачу',
+                                    QMessageBox.Ok)
+            return
         if self.answer == '':
             self.copy_in_my_answer_btn.setEnabled(False)
             return
