@@ -141,7 +141,17 @@ class MyWidget(QMainWindow, Ui_MainWindow):
         t.join()
 
     def save_solution(self):
+        if len(self.link_to_task_le.text()) == 0:
+            QMessageBox.information(self,
+                                    'Информация', 'Добавьте ссылку на задачу',
+                                    QMessageBox.Ok)
+            return
         id = self.files.get_id_from_url(self.link_to_task_le.text())
+        if '-' not in id:
+            QMessageBox.information(self,
+                                    'Информация', 'Добавьте ссылку на задачу',
+                                    QMessageBox.Ok)
+            return
         if self.files.save_solution(self.explanation_pte.toPlainText(), id):
             QMessageBox.information(self,
                                     'Информация', 'Успешно сохранено',
@@ -194,7 +204,6 @@ class MyWidget(QMainWindow, Ui_MainWindow):
             return
         else:
             self.explanation_pte.setPlainText(self.answer)
-
 
     def prepare_file(self):
         if self.files is None:
