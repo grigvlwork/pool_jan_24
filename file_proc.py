@@ -227,7 +227,8 @@ class Files:
                         except Exception:
                             pass
             except Exception:
-                pass
+                if len(result) > 0:
+                    return result
         return result
 
 
