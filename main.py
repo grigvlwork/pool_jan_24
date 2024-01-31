@@ -1,4 +1,5 @@
 import sys
+import threading
 import traceback
 import subprocess
 import pyperclip
@@ -21,6 +22,7 @@ from mainwindow import Ui_MainWindow
 import requests
 import winreg
 from file_proc import Files
+from threading import Thread
 
 
 def remove_comments(code):
@@ -70,9 +72,16 @@ def spell_check(text):
 def check_dict():
     file1 = '/_venv/Lib/site-packages/enchant/data/mingw64/share/enchant/hunspell/ru_RU.aff'
     file2 = '/_venv/Lib/site-packages/enchant/data/mingw64/share/enchant/hunspell/ru_RU.dic'
-    file_path1 = os.getcwd() + '/venv/Lib/site-packages/enchant/data/mingw64/share/enchant/hunspell/ru_RU.aff'
-    file_path2 = os.getcwd() + '/venv/Lib/site-packages/enchant/data/mingw64/share/enchant/hunspell/ru_RU.dic'
-    file_path = os.getcwd() + '/venv/Lib/site-packages/enchant/data/mingw64/share/enchant/hunspell/'
+    if os.path.exists(os.getcwd() + '/venv'):
+        file_path1 = os.getcwd() + '/venv/Lib/site-packages/enchant/data/mingw64/share/enchant/hunspell/ru_RU.aff'
+        file_path2 = os.getcwd() + '/venv/Lib/site-packages/enchant/data/mingw64/share/enchant/hunspell/ru_RU.dic'
+        file_path = os.getcwd() + '/venv/Lib/site-packages/enchant/data/mingw64/share/enchant/hunspell/'
+    elif os.path.exists(os.getcwd() + '/.venv'):
+        file_path1 = os.getcwd() + '/.venv/Lib/site-packages/enchant/data/mingw64/share/enchant/hunspell/ru_RU.aff'
+        file_path2 = os.getcwd() + '/.venv/Lib/site-packages/enchant/data/mingw64/share/enchant/hunspell/ru_RU.dic'
+        file_path = os.getcwd() + '/.venv/Lib/site-packages/enchant/data/mingw64/share/enchant/hunspell/'
+    else:
+        return False
     try:
         if (not os.path.exists(file_path1)) or (not os.path.exists(file_path2)):
             for file in glob.glob(os.getcwd() + file1):
@@ -93,6 +102,9 @@ class MyWidget(QMainWindow, Ui_MainWindow):
         self.answer_number = 0
         self.allow_spell_check = check_dict()
         self.correct_code_model = QStandardItemModel()
+        self.linked_answers_model = QStandardItemModel()
+        self.linked_answers_list = []
+        self.answers_tw.setTabVisible(1, False)
         self.explanation_pte.textChanged.connect(self.explanation_changed)
         self.run_btn.clicked.connect(self.run_correct)
         self.toggle_theme_btn.clicked.connect(self.change_theme)
@@ -105,14 +117,104 @@ class MyWidget(QMainWindow, Ui_MainWindow):
         self.setWindowTitle(f'Пул январь 2024 {self.check_version()}')
         self.link_to_task_le.textChanged.connect(self.link_to_task_changed)
         self.link_pb.clicked.connect(self.insert_link)
+        self.save_btn.clicked.connect(self.save_solution)
+        self.answers_tv.clicked.connect(self.select_answer)
+        self.copy_in_my_answer_btn.clicked.connect(self.copy_in_my_answer)
+        self.answer = ''
         self.my_error_txt = ''
         self.files = None
         self.file_name = None
         # https://dev.to/ashishpandey/say-goodbye-to-chrome-build-your-own-browser-with-pyqt5-and-python-23ld
 
+    def select_answer(self):
+        self.answer = self.linked_answers_model.data(self.answers_tv.selectedIndexes()[0], 0)
+        # print(answer)
+
     def insert_link(self):
+        self.copy_in_my_answer_btn.setEnabled(False)
         self.link_to_task_le.clear()
         self.link_to_task_le.setText(pyperclip.paste())
+        self.linked_answers_model.clear()
+        self.answers_tw.setTabVisible(1, False)
+        t = threading.Thread(target=self.load_solutions())
+        t.start()
+        t.join()
+
+    def save_solution(self):
+        if len(self.link_to_task_le.text()) == 0:
+            QMessageBox.information(self,
+                                    'Информация', 'Добавьте ссылку на задачу',
+                                    QMessageBox.Ok)
+            return
+        id = self.files.get_id_from_url(self.link_to_task_le.text())
+        if '-' not in id:
+            QMessageBox.information(self,
+                                    'Информация', 'Добавьте ссылку на задачу',
+                                    QMessageBox.Ok)
+            return
+        if self.files.save_solution(self.explanation_pte.toPlainText(), id):
+            QMessageBox.information(self,
+                                    'Информация', 'Успешно сохранено',
+                                    QMessageBox.Ok)
+        else:
+            QMessageBox.information(self,
+                                    'Информация', 'Не удалось сохранить',
+                                    QMessageBox.Ok)
+        try:
+            if self.files.upload_solution(id) == 1:
+                QMessageBox.information(self,
+                                        'Информация', 'Успешно загружено на Яндекс-диск',
+                                        QMessageBox.Ok)
+            else:
+                QMessageBox.information(self,
+                                        'Информация', 'Не удалось загрузить',
+                                        QMessageBox.Ok)
+        except Exception:
+            QMessageBox.information(self,
+                                    'Информация', 'Не удалось загрузить',
+                                    QMessageBox.Ok)
+
+    def load_solutions(self):
+        if len(self.link_to_task_le.text()) == 0:
+            self.linked_answers_model.clear()
+            self.linked_answers_list = []
+            self.answers_tw.setTabVisible(1, False)
+            return
+        else:
+            id = self.files.get_id_from_url(self.link_to_task_le.text())
+            self.files.download_solution(id)
+            self.linked_answers = self.files.load_solutions(id)
+            if len(self.linked_answers) > 0:
+                self.linked_answers_model.clear()
+                for row in self.linked_answers:
+                    # temp_row = [QStandardItem(row[0]), QStandardItem(row[1])]
+                    temp_row = [QStandardItem(row[1])]
+                    self.linked_answers_model.appendRow(temp_row)
+                self.answers_tv.setModel(self.linked_answers_model)
+                self.answers_tw.setTabVisible(1, True)
+                self.answers_tv.horizontalHeader().setVisible(False)
+                self.answers_tv.verticalHeader().setVisible(False)
+                self.answers_tv.resizeColumnsToContents()
+                self.answers_tv.resizeRowsToContents()
+                self.copy_in_my_answer_btn.setEnabled(True)
+
+    def copy_in_my_answer(self):
+        if len(self.link_to_task_le.text()) == 0:
+            QMessageBox.information(self,
+                                    'Информация', 'Добавьте ссылку на задачу',
+                                    QMessageBox.Ok)
+            return
+        id = self.files.get_id_from_url(self.link_to_task_le.text())
+        if '-' not in id:
+            QMessageBox.information(self,
+                                    'Информация', 'Добавьте ссылку на задачу',
+                                    QMessageBox.Ok)
+            return
+        if self.answer == '':
+            self.copy_in_my_answer_btn.setEnabled(False)
+            return
+        else:
+            self.explanation_pte.setPlainText(self.answer)
 
     def prepare_file(self):
         if self.files is None:
@@ -151,8 +253,9 @@ class MyWidget(QMainWindow, Ui_MainWindow):
                     )
                     if filename is not None and os.path.basename(filename) != file_name:
                         if QMessageBox.critical(self,
-                                                'Ошибка', f'Имя выбранного файла {os.path.basename(filename)} не соответствует\n' +
-                                                          f'имени файла в программе {file_name}. Скачайте другой файл',
+                                                'Ошибка',
+                                                f'Имя выбранного файла {os.path.basename(filename)} не соответствует\n' +
+                                                f'имени файла в программе {file_name}. Скачайте другой файл',
                                                 QMessageBox.Ok | QMessageBox.Cancel) == QMessageBox.Cancel:
                             return
                         file_name = self.files.get_filename_from_code(code)
@@ -214,6 +317,7 @@ class MyWidget(QMainWindow, Ui_MainWindow):
     def clear_explanation(self):
         self.explanation_text = ''
         self.explanation_pte.clear()
+        self.save_btn.setEnabled(False)
         # self.link_to_task_le.clear()
 
     def change_theme(self):
@@ -240,7 +344,6 @@ class MyWidget(QMainWindow, Ui_MainWindow):
                 os.remove(os.getcwd() + '/' + file_name)
             except Exception:
                 pass
-
 
     def explanation_changed(self):
         self.explanation_text = self.explanation_pte.toPlainText()
@@ -282,6 +385,7 @@ class MyWidget(QMainWindow, Ui_MainWindow):
                                            QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
             if message != QMessageBox.Yes:
                 return
+        self.save_btn.setEnabled(True)
         pyperclip.copy(self.my_answer_pte.toPlainText())
 
     def correct_row_generator(self):
@@ -294,12 +398,23 @@ class MyWidget(QMainWindow, Ui_MainWindow):
             self.correct_code_tv.horizontalHeader().setVisible(False)
             self.correct_code_tv.resizeColumnToContents(0)
 
+    def linked_answers_generator(self):
+        if len(self.linked_answers_list) == 0:
+            self.answers_tw.setTabVisible(1, False)
+            return
+        if self.answers_tw.currentIndex() == 1:
+            self.linked_answers_model.clear()
+            for row in self.linked_answers_list:
+                it = [QStandardItem(row[0]), QStandardItem(row[1])]
+                self.linked_answers_model.appendRow(it)
+
     def paste_code(self):
         self.correct_code_pte.clear()
         self.link_to_task_le.clear()
         self.correct_code_pte.appendPlainText(pyperclip.paste())
 
     def paste_explanation(self):
+        self.save_btn.setEnabled(False)
         self.explanation_pte.clear()
         self.explanation_pte.appendPlainText(pyperclip.paste())
 
