@@ -133,6 +133,7 @@ class MyWidget(QMainWindow, Ui_MainWindow):
     def insert_link(self):
         self.copy_in_my_answer_btn.setEnabled(False)
         self.link_to_task_le.clear()
+        self.save_btn.setEnabled(False)
         self.link_to_task_le.setText(pyperclip.paste())
         self.linked_answers_model.clear()
         self.answers_tw.setTabVisible(1, False)
