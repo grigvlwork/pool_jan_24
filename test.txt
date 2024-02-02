@@ -1,15 +1,20 @@
-https://education.yandex.ru/ege/task/72527617-9f75-4d29-96c4-074a469a8b8d
+https://education.yandex.ru/ege/task/a787ce29-0649-4566-a463-0869774a61dc
+v = open("9.csv", 'r')
+a = 0
+for i in v:
+    v.readline(i)
+    if v.readline(i)[0] % 4 == 0 or v.readline(i)[0] % 400 == 0 and v.readline(i)[0] % 100 > 0:
+        if v.readline(i)[1] == 10 and v.readline(i)[3] == "ж":
+            a += 1
+print(a)
 
-Код ученика:
-# Доступен файл для чтения: 17_(2).txt
-lst = [int(x) for x in open('17_(2).txt']
-c = 0
-mx = 0
-for i in range(len(lst) - 1):
-  for j in range(i + 1, len(lst)):
-    x = lst[i]
-    y = lst[j]
-    if ((x + y) % 18 == 0) ^ ((x * y) % 18 == 0):
-      c += 1
-      mx = max(mx, x + y)
-print(c, mx)
+https://education.yandex.ru/ege/task/ce959cfe-67fa-4b05-81dc-6a387f57d9a7
+
+Ошибка из-за неверного перевода чисел в троичную систему, при нулевом `n` функция `to3` возвращает пустую строку, добавь обработку этого случая в строку 2, вот так правильно:
+```
+def to3(n):
+  if n == 0: return('0')
+  res = ''
+```
+
+https://education.yandex.ru/ege/task/ce959cfe-67fa-4b05-81dc-6a387f57d9a7
