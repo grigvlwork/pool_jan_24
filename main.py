@@ -118,20 +118,41 @@ class MyWidget(QMainWindow, Ui_MainWindow):
         self.link_to_task_le.textChanged.connect(self.link_to_task_changed)
         self.link_pb.clicked.connect(self.insert_link)
         self.save_btn.clicked.connect(self.save_solution)
+        self.answers_tv.clicked.connect(self.select_answer)
+        self.copy_in_my_answer_btn.clicked.connect(self.copy_in_my_answer)
+        self.answer = ''
         self.my_error_txt = ''
         self.files = None
         self.file_name = None
         # https://dev.to/ashishpandey/say-goodbye-to-chrome-build-your-own-browser-with-pyqt5-and-python-23ld
 
+    def select_answer(self):
+        self.answer = self.linked_answers_model.data(self.answers_tv.selectedIndexes()[0], 0)
+        # print(answer)
+
     def insert_link(self):
+        self.copy_in_my_answer_btn.setEnabled(False)
         self.link_to_task_le.clear()
+        self.save_btn.setEnabled(False)
         self.link_to_task_le.setText(pyperclip.paste())
+        self.linked_answers_model.clear()
+        self.answers_tw.setTabVisible(1, False)
         t = threading.Thread(target=self.load_solutions())
         t.start()
-        # t.join()
+        t.join()
 
     def save_solution(self):
+        if len(self.link_to_task_le.text()) == 0:
+            QMessageBox.information(self,
+                                    'Информация', 'Добавьте ссылку на задачу',
+                                    QMessageBox.Ok)
+            return
         id = self.files.get_id_from_url(self.link_to_task_le.text())
+        if '-' not in id:
+            QMessageBox.information(self,
+                                    'Информация', 'Добавьте ссылку на задачу',
+                                    QMessageBox.Ok)
+            return
         if self.files.save_solution(self.explanation_pte.toPlainText(), id):
             QMessageBox.information(self,
                                     'Информация', 'Успешно сохранено',
@@ -141,9 +162,9 @@ class MyWidget(QMainWindow, Ui_MainWindow):
                                     'Информация', 'Не удалось сохранить',
                                     QMessageBox.Ok)
         try:
-            if self.files.upload_solution() == 1:
+            if self.files.upload_solution(id) == 1:
                 QMessageBox.information(self,
-                                        'Информация', 'Успешно загружено на диск',
+                                        'Информация', 'Успешно загружено на Яндекс-диск',
                                         QMessageBox.Ok)
             else:
                 QMessageBox.information(self,
@@ -167,13 +188,34 @@ class MyWidget(QMainWindow, Ui_MainWindow):
             if len(self.linked_answers) > 0:
                 self.linked_answers_model.clear()
                 for row in self.linked_answers:
-                    temp_row = [QStandardItem(row[0]), QStandardItem(row[1])]
+                    # temp_row = [QStandardItem(row[0]), QStandardItem(row[1])]
+                    temp_row = [QStandardItem(row[1])]
                     self.linked_answers_model.appendRow(temp_row)
                 self.answers_tv.setModel(self.linked_answers_model)
                 self.answers_tw.setTabVisible(1, True)
                 self.answers_tv.horizontalHeader().setVisible(False)
+                self.answers_tv.verticalHeader().setVisible(False)
                 self.answers_tv.resizeColumnsToContents()
                 self.answers_tv.resizeRowsToContents()
+                self.copy_in_my_answer_btn.setEnabled(True)
+
+    def copy_in_my_answer(self):
+        if len(self.link_to_task_le.text()) == 0:
+            QMessageBox.information(self,
+                                    'Информация', 'Добавьте ссылку на задачу',
+                                    QMessageBox.Ok)
+            return
+        id = self.files.get_id_from_url(self.link_to_task_le.text())
+        if '-' not in id:
+            QMessageBox.information(self,
+                                    'Информация', 'Добавьте ссылку на задачу',
+                                    QMessageBox.Ok)
+            return
+        if self.answer == '':
+            self.copy_in_my_answer_btn.setEnabled(False)
+            return
+        else:
+            self.explanation_pte.setPlainText(self.answer)
 
     def prepare_file(self):
         if self.files is None:

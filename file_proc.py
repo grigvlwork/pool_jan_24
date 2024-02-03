@@ -4,6 +4,7 @@ import shutil
 import glob
 from py7zr import SevenZipFile as zf7
 import zlib
+import chardet
 
 
 class Files:
@@ -31,7 +32,8 @@ class Files:
             self.token = t['config.tmp'].read().decode('utf-8')
 
     def get_id_from_url(self, url):
-        return url[url.rfind('/') + 1:]
+        id = url[url.strip().rfind('/') + 1:].replace('\r\n', '')
+        return id
 
     def get_filename_from_code(self, code):
         if 'open' not in code:
@@ -137,7 +139,7 @@ class Files:
         try:
             if not self.y.is_dir(f'/files/{id}'):
                 self.y.mkdir(f'/files/{id}')
-            self.y.upload(arc_solution_name, dest, overwrite=True, n_retries=5, retry_interval=3)
+            self.y.upload(arc_solution_name, dest, overwrite=True)
             return 1
         except Exception:
             return -1
@@ -159,11 +161,14 @@ class Files:
             try:
                 with zf7(arc_solution_mame, 'w') as archive:
                     archive.write(os.path.basename(tmp_solution_name))
+                    # archive.write('filler')
             except:
                 return False
         else:
             try:
                 with zf7(arc_solution_mame, 'a') as archive:
+                    if hex(zlib.crc32(text.encode('utf-8')) % 2 ** 32)[2:] in archive.getnames():
+                        return True
                     archive.write(os.path.basename(tmp_solution_name))
             except:
                 return False
@@ -213,10 +218,18 @@ class Files:
             try:
                 with zf7(arc_solution_mame, 'r') as archive:
                     for file in archive.getnames():
+                        # if file == 'filler':
+                        #     continue
                         text = archive.read(targets=file)
-                        result.append([file, text[file].read().decode('utf-8')])
-            except:
-                pass
+                        text = text[file].read()
+                        encoding = chardet.detect(text)['encoding']
+                        try:
+                            result.append([file, text.decode(encoding)])
+                        except Exception:
+                            pass
+            except Exception:
+                if len(result) > 0:
+                    return result
         return result
 
 

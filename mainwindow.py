@@ -168,6 +168,7 @@ class Ui_MainWindow(object):
         self.copy_in_my_answer_btn.setObjectName("copy_in_my_answer_btn")
         self.verticalLayout.addWidget(self.copy_in_my_answer_btn)
         self.answers_tv = QtWidgets.QTableView(self.tab_linked_answer)
+        self.answers_tv.setMaximumSize(QtCore.QSize(1000, 16777215))
         self.answers_tv.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
         self.answers_tv.setObjectName("answers_tv")
         self.verticalLayout.addWidget(self.answers_tv)
@@ -207,7 +208,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
         self.correct_tw.setCurrentIndex(0)
-        self.answers_tw.setCurrentIndex(0)
+        self.answers_tw.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):

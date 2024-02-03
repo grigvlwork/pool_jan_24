@@ -264,7 +264,7 @@
         <item>
          <widget class="QTabWidget" name="answers_tw">
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="tab_answer">
            <attribute name="title">
@@ -311,6 +311,12 @@
             </item>
             <item>
              <widget class="QTableView" name="answers_tv">
+              <property name="maximumSize">
+               <size>
+                <width>1000</width>
+                <height>16777215</height>
+               </size>
+              </property>
               <property name="sizeAdjustPolicy">
                <enum>QAbstractScrollArea::AdjustToContents</enum>
               </property>
